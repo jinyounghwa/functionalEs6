@@ -29,3 +29,4 @@ for (const a of map.entries()) log(a);
 
 
 //Symbol.iterator
+//
