@@ -30,3 +30,43 @@ for (const a of map.entries()) log(a);
 
 //Symbol.iterator
 //
+
+const iterable = {
+    [Symbol.iterator]() {
+        let i = 3;
+        return {
+            next() {
+                return i === 0 ? {done:true} : { value : i--, done: false}
+            },
+            [Symbol.iterator]() {return this;}
+        }
+    }
+}
+
+let iterator = iterable[Symbol.iterator]();
+log(iterator.next());
+// log(iterator.next());
+// log(iterator.next());
+// log(iterator.next());
+
+for (const a of iterator) log(a);
+
+log('Array-----------');
+
+const arr2 = [1,2,3];
+
+let iter2 = arr2[Symbol.iterator]();
+// iter.next();
+log(iter2[Symbol.iterator]() === iter2);
+for (const a of arr2) log(a);
+
+log('queryselector-----------');
+
+for (const a of document.querySelectorAll('*')) log(a);
+const all = document.querySelectorAll('*');
+let iter3 = all[Symbol.iterator]();
+log('queryselector-----------');
+
+log(iter3.next());
+log(iter3.next());
+log(iter3.next());

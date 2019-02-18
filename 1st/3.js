@@ -18,3 +18,4 @@ for ( const a of list ) {
 for (const a of str) {
     log(a);
 }
+
