@@ -2,11 +2,11 @@ const  log = console.log;
 const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._);
 
 const products = [
-    { name : '반팔티', price:15000},
-    { name : '긴팔티', price:20000},
-    { name : '핸드폰케이스', price:15000},
-    { name : '후드티', price:30000},
-    { name : '바지', price:25000}
+    { name : '반팔티', price:15000, quantity:1},
+    { name : '긴팔티', price:20000,quantity:2},
+    { name : '핸드폰케이스', price:15000,quantity:3},
+    { name : '후드티', price:30000,quantity:4},
+    { name : '바지', price:25000,quantity:5}
 ];
 
 //코드를 값으로 다루어 표현력 높이기
@@ -105,3 +105,34 @@ log(mult3(5));
 log(mult3(3));
 
 
+const add1 = (a,b) => a+b;
+
+const sum = curry((f, iter) => go(
+    iter,
+    map(f),
+    reduce(add)));
+
+log(sum(p => p.quantity, products));
+
+// const total_quantity = pipe(
+//     map( p => p.quantity),
+//     reduce(add1));
+//
+//
+//
+// log(total_quantity(products));
+
+// const total_price1 = pipe(
+//     map(p => p.price * p.quantity),
+//     reduce(add1));
+//
+//
+// log(total_price1(products));
+
+const total_quantity = sum(p => p.quantity);
+
+const total_price1 = sum(p => p.price * p.quantity);
+
+log(total_price1(products));
+
+log(total_quantity(products));
