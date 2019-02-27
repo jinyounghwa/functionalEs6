@@ -2,11 +2,11 @@ const  log = console.log;
 const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._);
 
 const products = [
-    { name : '반팔티', price:15000, quantity:1},
-    { name : '긴팔티', price:20000,quantity:2},
-    { name : '핸드폰케이스', price:15000,quantity:3},
-    { name : '후드티', price:30000,quantity:4},
-    { name : '바지', price:25000,quantity:5}
+    { name: '반팔티', price: 15000, quantity: 1, is_selected: true },
+    { name: '긴팔티', price: 20000, quantity: 2, is_selected: false },
+    { name: '핸드폰케이스', price: 15000, quantity: 3, is_selected: true },
+    { name: '후드티', price: 30000, quantity: 4, is_selected: false },
+    { name: '바지', price: 25000, quantity: 5, is_selected: false }
 ];
 
 //코드를 값으로 다루어 표현력 높이기
@@ -136,3 +136,29 @@ const total_price1 = sum(p => p.price * p.quantity);
 log(total_price1(products));
 
 log(total_quantity(products));
+
+document.querySelector('#cart').innerHTML = `
+    <table>
+      <tr>
+        <th></th>
+        <th>상품 이름</th>
+        <th>가격</th>
+        <th>수량</th>
+        <th>총 가격</th>
+      </tr>
+      ${go(products, sum(p => `
+          <tr>
+            <td><input type="checkbox" ${p.is_selected ? 'checked' : ''}></td>
+            <td>${p.name}</td>
+            <td>${p.price}</td>
+            <td><input type="number" value="${p.quantity}"></td>
+            <td>${p.price * p.quantity}</td>
+          </tr>
+      `))}
+      <tr>
+        <td colspan="3">합계</td>
+        <td>${total_quantity(filter(p => p.is_selected, products))}</td>
+        <td>${total_price1(filter(p => p.is_selected, products))}</td>
+      </tr>
+    </table>
+  `;

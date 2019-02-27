@@ -179,3 +179,4 @@ log(reduce(
     add1,
     filter(n => n >= 20000,
         map(p=> p.price,products))));
+

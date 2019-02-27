@@ -62,11 +62,20 @@ for (const a of arr2) log(a);
 
 log('queryselector-----------');
 
-for (const a of document.querySelectorAll('*')) log(a);
-const all = document.querySelectorAll('*');
-let iter3 = all[Symbol.iterator]();
-log('queryselector-----------');
+//for (const a of document.querySelectorAll('*')) log(a);
+// const all = document.querySelectorAll('*');
+// let iter3 = all[Symbol.iterator]();
+// log('queryselector-----------');
+//
+// log(iter3.next());
+// log(iter3.next());
+// log(iter3.next());
 
-log(iter3.next());
-log(iter3.next());
-log(iter3.next());
+
+
+
+log('전개연산자-----------');
+//a[Symbol.iterator] = null;
+const a = [1,2];
+log([...a, ...arr, ...set, ...map.keys()]);
+
