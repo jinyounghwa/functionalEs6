@@ -2,32 +2,43 @@
 const log = console.log;
 const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._);
 
+
 const add = (a ,b) => a +b;
 
 const reduce = curry((f, acc, iter) => {
     if (!iter) {
         iter = acc[Symbol.iterator]();
         acc = iter.next().value;
+    } else {
+        iter = iter[Symbol.iterator]();
     }
-    for ( const a of iter) {
+    let cur;
+    while (!(cur = iter.next()).done){
+        const a = cur.value;
         acc = f(acc, a);
     }
     return acc;
 });
 const map = curry((f,iter) => {
-
     let res = [];
-    for (const a of iter ) {
+    iter = iter[Symbol.iterator]();
+    let cur;
+    while (!(cur = iter.next()).done) {
+        const a = cur.value;
         res.push(f(a));
     }
     return res;
 });
+
 const filter = curry((f, iter) => {
     let res = [];
-    for (const a of iter) {
+    iter = iter[Symbol.iterator]();
+    let cur;
+    while (!(cur = iter.next()).done) {
+        const a = cur.value;
         if (f(a)) res.push(a);
+        res.push(f(a));
     }
-
     return res;
 });
 
@@ -56,15 +67,16 @@ const range = l => {
     }
     return res;
 };
+
 let list = L.range(4);
 
-log(list);
+//log(list);
 
 // log(list.next().value);
 // log(list.next().value);
 // log(list.next().value);
 // log(list.next().value);
-log(reduce(add, list));
+//log(reduce(add, list));
 
 //take 함수
 const take = curry((l, iter) =>{
@@ -96,3 +108,26 @@ let it = L.map(a => a + 10, [1,2,3]);
 // log(it.next());
 // log(it.next());
 // log(it.next());
+
+L.filter = function *(f,iter) {
+    for(const a of iter) if (f(a)) yield  a;
+};
+
+let it2 = L.filter(a => a % 2, [1,2,3,4]);
+// log(it2.next());
+// log(it2.next());
+go(
+    range(10),
+    map(n => n + 10),
+    filter(n=> n % 2),
+    take(2),
+    log
+);
+
+// go(
+//     L.range(10),
+//     L.map(n => n + 10),
+//     L.filter(n=> n % 2),
+//     take(2),
+//     log
+// );
