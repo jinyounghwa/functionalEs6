@@ -100,34 +100,52 @@ const pipe = (f, ...fs) => (...as) => go(f(...as), ...fs);
 
 //L.map 이터레이터를 반환하는 제너레이터 함수
 
-L.map = function *(f,iter) {
-    for(const a of iter) yield f(a);
-};
+// L.map = function *(f,iter) {
+//     for(const a of iter) yield f(a);
+// };
 
+L.map = curry(function *(f, iter) {
+    for (const a of iter) {
+        yield f(a);
+    }
+});
 let it = L.map(a => a + 10, [1,2,3]);
 // log(it.next());
 // log(it.next());
 // log(it.next());
 
-L.filter = function *(f,iter) {
-    for(const a of iter) if (f(a)) yield  a;
-};
+L.filter = curry(function *(f, iter) {
+    for (const a of iter) {
+        if (f(a)) yield a;
+    }
+});
 
-let it2 = L.filter(a => a % 2, [1,2,3,4]);
+// L.filter = curry(function *(f, iter) {
+//     iter = iter[Symbol.iterator]();
+//     let cur;
+//     while (!(cur = iter.next()).done){
+//         const a = cur.value;
+//         if (f(a)){
+//             yield a;
+//         }
+//     }
+// });
+
+//let it1 = L.filter(a => a % 2, [1,2,3,4]);
 // log(it2.next());
 // log(it2.next());
-go(
-    range(10),
-    map(n => n + 10),
-    filter(n=> n % 2),
-    take(2),
-    log
-);
-
 // go(
-//     L.range(10),
-//     L.map(n => n + 10),
-//     L.filter(n=> n % 2),
+//     range(10),
+//     map(n => n + 10),
+//     filter(n=> n % 2),
 //     take(2),
 //     log
 // );
+
+go(
+    L.range(10),
+    L.map(n => n + 10),
+    L.filter(n=> n % 2),
+    take(2),
+    log
+);
