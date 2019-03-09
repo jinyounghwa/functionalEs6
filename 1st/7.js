@@ -149,3 +149,14 @@ go(
     take(2),
     log
 );
+//8.2 queryStr 함수
+
+const queryStr = pipe(
+    Object.entries,
+    map(([k, v]) => `${k} =${v}`),
+    reduce((a,b) => `${a}&${b}`)
+);
+
+
+
+log(queryStr({limit:10, offset:10, type:'notice'}));
