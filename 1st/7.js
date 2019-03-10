@@ -151,12 +151,28 @@ go(
 );
 //8.2 queryStr 함수
 
+const join = curry((sep=`,`, iter) =>  reduce((a, b) => `${a}${sep}${b}`, iter));
+
+
 const queryStr = pipe(
     Object.entries,
-    map(([k, v]) => `${k} =${v}`),
-    reduce((a,b) => `${a}&${b}`)
+    L.map(([k, v]) => `${k} =${v}`),
+    function (a) {
+        console.log(a);
+        return a;
+    },
+    join('&')
 );
 
 
 
 log(queryStr({limit:10, offset:10, type:'notice'}));
+
+function *a() {
+    yield 10;
+    yield 11;
+    yield 12;
+    yield 13;
+}
+
+log(join('-',a()));
