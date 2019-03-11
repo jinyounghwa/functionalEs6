@@ -19,28 +19,8 @@ const reduce = curry((f, acc, iter) => {
     }
     return acc;
 });
-const map = curry((f,iter) => {
-    let res = [];
-    iter = iter[Symbol.iterator]();
-    let cur;
-    while (!(cur = iter.next()).done) {
-        const a = cur.value;
-        res.push(f(a));
-    }
-    return res;
-});
 
-const filter = curry((f, iter) => {
-    let res = [];
-    iter = iter[Symbol.iterator]();
-    let cur;
-    while (!(cur = iter.next()).done) {
-        const a = cur.value;
-        if (f(a)) res.push(a);
-        res.push(f(a));
-    }
-    return res;
-});
+
 
 
 
@@ -142,20 +122,25 @@ L.filter = curry(function *(f, iter) {
 //     log
 // );
 
-go(
-    L.range(10),
-    L.map(n => n + 10),
-    L.filter(n=> n % 2),
-    take(2),
-    log
-);
+// go(
+//     L.range(10),
+//     L.map(n => n + 10),
+//     L.filter(n=> n % 2),
+//     take(2),
+//     log
+// );
 //8.2 queryStr 함수
+
+L.entries = function *(obj) {
+    for (const k in obj) yield [k, obj[k]];
+};
 
 const join = curry((sep=`,`, iter) =>  reduce((a, b) => `${a}${sep}${b}`, iter));
 
 
 const queryStr = pipe(
-    Object.entries,
+    L.entries,
+    //a=> (console.log(a),a),
     L.map(([k, v]) => `${k} =${v}`),
     function (a) {
         console.log(a);
@@ -166,13 +151,115 @@ const queryStr = pipe(
 
 
 
-log(queryStr({limit:10, offset:10, type:'notice'}));
+//log(queryStr({limit:10, offset:10, type:'notice'}));
 
-function *a() {
-    yield 10;
-    yield 11;
-    yield 12;
-    yield 13;
-}
+// function *a() {
+//     yield 10;
+//     yield 11;
+//     yield 12;
+//     yield 13;
+// }
 
-log(join('-',a()));
+// log(join('-',a()));
+
+//8.4 take,find
+
+const users = [
+    {age : 32},
+    {age : 31},
+    {age : 37},
+    {age : 28},
+    {age : 25},
+    {age : 32},
+    {age : 31},
+    {age : 37}
+];
+
+const takeAll = take(Infinity);
+
+const find = curry((f, iter) => go(
+    iter,
+    L.filter(f),
+    take(1),
+    ([a]) => a
+));
+
+//log(find(u => u.age < 30) (users));
+//
+// go(
+//     users,
+//     L.map(u => u.age),
+//     find(n => n < 30),
+//     log
+// );
+const map = curry(pipe(L.map,takeAll));
+
+//log(map(a => a + 10, L.range(4)));
+
+const filter = curry(pipe(L.filter,takeAll));
+
+//log(filter(a => a % 2, range(4)));
+
+//8.6 L.flatten
+
+log([[1,2],3,4,...[5,6],...[7,8,9]]);
+
+const  isIterable = a => a && a[Symbol.iterator];
+
+// L.flatten = function *(iter) {
+//     for (const a of iter) {
+//         if (isIterable(a)) for ( const b of a) yield b;
+//         else yield a;
+//     }
+// };
+L.flatten = function *(iter) {
+    for (const a of iter) {
+        if (isIterable(a)) yield *a;
+        else yield a;
+    }
+};
+L.deepFlat = function *f(iter) {
+    for (const a of iter) if (isIterable(a)) yield* f(a);
+    else yield a;
+};
+log([...L.deepFlat([1, [2, [3, 4], [[5]]]])]);
+
+let it3 = L.flatten([[1,2],3,4,...[5,6],...[7,8,9]]);
+log([...it3]);
+
+log(it3.next());
+log(it3.next());
+log(it3.next());
+log(take(6, L.flatten([[1,2],3,4,...[5,6],...[7,8,9]])));
+const flatten = pipe(L.flatten, takeAll);
+
+log(flatten([[1,2],3,4,...[5,6],...[7,8,9]]));
+
+// L.flatMap
+
+log([[1,2],[3,4],[5,6,7],8,9,[10]].flatMap(a=>a));
+
+//log([[1,2],[3,4],[5,6,7],8,9,[10]].map(a => a.map(a=> a * a)));
+
+L.flatMap = curry(pipe(L.map, L.flatten));
+
+const flatMap = curry(pipe(L.map, flatten));
+
+
+//let it4 = L.flatMap(map(a => a * a), [[1,2],[3,4],[5,6,7],8,9,[10]]);
+
+let it4 = L.flatMap(a => a, [[1,2],[3,4],[5,6,7]]);
+
+log(flatMap(a=>a,[[1,2],[3,4],[5,6,7]]));
+
+// log(it4.next());
+// log(it4.next());
+// log(it4.next());
+// log(it4.next());
+// log(it4.next());
+// log(it4.next());
+// log(it4.next());
+
+log([...it4]);
+
+log(flatMap(range,map(a => a + 1, [1,2,3])));
