@@ -346,24 +346,50 @@ const add5 = a => a + 5;
 
 const n1 = 10;
 
-go1(go1(n1 , add5), log);
-
-const n2  = delay100(10);
-
-go1(go1(n2, add5), log);
+// go1(go1(n1 , add5), log);
+//
+// const n2  = delay100(10);
+//
+// go1(go1(n2, add5), log);
 
 //9.4 promise 는 비동기 상태에서 함수합성을 원할하게 한다. 모나드-상황에 따라 안전하게 함수 합성
 
-const g = a => a + 1;
+// const g = a => a + 1;
+//
+// const f = a => a * a;
+//
+// log(f(g(1)));
 
-const f = a => a * a;
-
-log(f(g(1)));
-
-Array.of(1).map(g).map(f).forEach( r => log(r));
-
+// Array.of(1).map(g).map(f).forEach( r => log(r));
+//
 // 모나드 했을 때 잇점은 값이 없으면 함수가 동작하지 않는다.(빈값이 들어와도 동작하지 않음)
 
-Promise.resolve(2).then(g).then(f).then( r => log(r));
+//Promise.resolve(2).then(g).then(f).then( r => log(r));
 
+//9.5 Kleisli composition
+
+let users3 = [
+    {id:1, name:'aa'},
+    {id:2, name:'bb'},
+    {id:3, name:'cc'}
+];
+
+const getUserById = id => find(u => u.id == id, users3) || Promise.reject("없어요!");
+
+const f = ({name}) => name;
+const g = getUserById;
+// const fg = id => f(g(id));
+//
+// const r = fg(2);
+//
+// log(fg(2));
+// // user3.pop();
+// // user3.pop();
+//
+// const r2 = fg(2);
+// log(r);
+
+const  fg = id => Promise.resolve(id).then(g).then(f);
+
+fg(2).then(log);
 
