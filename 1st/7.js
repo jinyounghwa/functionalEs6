@@ -21,9 +21,6 @@ const reduce = curry((f, acc, iter) => {
 });
 
 
-
-
-
 const L = {};
 
 L.range = function *(l) {
@@ -321,15 +318,52 @@ function  add10(a, callback) {
     setTimeout(() => callback(a + 10), 100)
 }
 
-add10( 5 , res => {
-    log(res);
-});
+// add10( 5 , res => {
+//     log(res);
+// });
 
 function add20(a) {
     return new Promise(resolve => setTimeout(()=> resolve(a + 20), 100));
 }
+//return 을 사용하는게 가장 큰 차이이다.
 
-add20(5)
-    .then(add20)
-    .then(log);
+// let b = add20(5)
+//     .then(add20)
+//     .then(log);
+
+// log(b);
+
+// promise 가 callback 지옥을 해결하는게 목표가 아니라 1급으로 비동기 상황을 값으로 다룬다는 의미이다.
+// promise 는 promise 클래스로 만들어지는 인스턴스를 반환한다. 대기와 종료에 대한 값을 만든다.
+
+//9.3
+
+const delay100 = a => new Promise(resolve =>
+    setTimeout(() => resolve(a), 100));
+
+const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
+const add5 = a => a + 5;
+
+const n1 = 10;
+
+go1(go1(n1 , add5), log);
+
+const n2  = delay100(10);
+
+go1(go1(n2, add5), log);
+
+//9.4 promise 는 비동기 상태에서 함수합성을 원할하게 한다. 모나드-상황에 따라 안전하게 함수 합성
+
+const g = a => a + 1;
+
+const f = a => a * a;
+
+log(f(g(1)));
+
+Array.of(1).map(g).map(f).forEach( r => log(r));
+
+// 모나드 했을 때 잇점은 값이 없으면 함수가 동작하지 않는다.(빈값이 들어와도 동작하지 않음)
+
+Promise.resolve(2).then(g).then(f).then( r => log(r));
+
 
