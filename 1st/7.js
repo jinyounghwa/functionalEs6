@@ -1,7 +1,7 @@
 
 const log = console.log;
 const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._);
-
+const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
 const add = (a ,b) => a +b;
 
@@ -12,12 +12,17 @@ const reduce = curry((f, acc, iter) => {
     } else {
         iter = iter[Symbol.iterator]();
     }
-    let cur;
-    while (!(cur = iter.next()).done){
-        const a = cur.value;
-        acc = f(acc, a);
-    }
-    return acc;
+    return go1(acc, function reucr(acc) {
+        let cur;
+        while (!(cur = iter.next()).done){
+            const a = cur.value;
+            acc = f(acc, a);
+            // acc =acc instanceof Promise ? acc.then(acc =>f(acc, a)) :f(acc, a);
+            if (acc instanceof  Promise) return acc.then(reucr);
+        }
+        return acc;
+    });
+
 });
 
 
@@ -341,7 +346,7 @@ function add20(a) {
 const delay100 = a => new Promise(resolve =>
     setTimeout(() => resolve(a), 100));
 
-const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
+
 const add5 = a => a + 5;
 
 const n1 = 10;
@@ -389,7 +394,22 @@ const g = getUserById;
 // const r2 = fg(2);
 // log(r);
 
-const  fg = id => Promise.resolve(id).then(g).then(f);
+const  fg = id => Promise.resolve(id).then(g).then(f).catch(a => a);
 
-fg(2).then(log);
+// fg(2).then(log);
+
+//9.6
+// go(Promise.resolve(1),
+//     a => a +10
+//     , a => Promise.reject('error~~')
+//     , console.log('______')
+//     , a => a + 1000
+//     , a => a +10000
+//     ,log).catch(a => console.log(a));
+
+//9.7 Promise가 계속 중첩되어도 then 이면 상관없이 해도 결과는 한번에 꺼내올 수 있다.
+Promise.resolve(Promise.resolve(Promise.resolve(1))).then(log);
+
+new Promise(resolve => resolve(new Promise(resolve => resolve(1)))).then(log);
+
 
