@@ -63,12 +63,21 @@ let list = L.range(4);
 //take 함수
 const take = curry((l, iter) =>{
    let res = [];
-   for ( const a of iter) {
-       res.push(a);
-       if (res.length === l) return res;
-
-   }
-   return res;
+   iter = iter[Symbol.iterator]();
+   return function recur() {
+       let cur;
+       while (!(cur = iter.next()).done){
+           const a = cur.value;
+           if ( a instanceof  Promise) return a.then(a => {
+               res.push(a);
+               if (res.length == l) return res;
+               return recur();
+           });
+           res.push(a);
+           if (res.length == l) return res;
+       }
+       return res;
+   }();
 });
 
 const go = (...args) => reduce((a,f) => f(a), args);
@@ -88,9 +97,10 @@ const pipe = (f, ...fs) => (...as) => go(f(...as), ...fs);
 
 L.map = curry(function *(f, iter) {
     for (const a of iter) {
-        yield f(a);
+        yield go1(a,f);
     }
 });
+
 let it = L.map(a => a + 10, [1,2,3]);
 // log(it.next());
 // log(it.next());
@@ -408,8 +418,16 @@ const  fg = id => Promise.resolve(id).then(g).then(f).catch(a => a);
 //     ,log).catch(a => console.log(a));
 
 //9.7 Promise가 계속 중첩되어도 then 이면 상관없이 해도 결과는 한번에 꺼내올 수 있다.
-Promise.resolve(Promise.resolve(Promise.resolve(1))).then(log);
+// Promise.resolve(Promise.resolve(Promise.resolve(1))).then(log);
+//
+// new Promise(resolve => resolve(new Promise(resolve => resolve(1)))).then(log);
 
-new Promise(resolve => resolve(new Promise(resolve => resolve(1)))).then(log);
+//10.1 비동기를 잘 제어해 보자
 
+    go(
+// [Promise.resolve(1),Promise.resolve(2),Promise.resolve(3)],
+[2,3,4],
+    map (a => Promise.resolve(a + 10)),
+    //takeAll,
+    log);
 
