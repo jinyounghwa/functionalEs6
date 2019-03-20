@@ -72,7 +72,7 @@ const take = curry((l, iter) =>{
                res.push(a);
                if (res.length == l) return res;
                return recur();
-           });
+           }).catch( e => e ==nop ? recur() : Promise.reject(e));
            res.push(a);
            if (res.length == l) return res;
        }
@@ -106,9 +106,13 @@ let it = L.map(a => a + 10, [1,2,3]);
 // log(it.next());
 // log(it.next());
 
+const nop = Symbol('nop');
+
 L.filter = curry(function *(f, iter) {
     for (const a of iter) {
-        if (f(a)) yield a;
+        const b = go1(a,f);
+        if( b instanceof  Promise) yield b.then(b => b ? a : Promise.reject(nop));
+        else if (b) yield a;
     }
 });
 
@@ -431,3 +435,15 @@ const  fg = id => Promise.resolve(id).then(g).then(f).catch(a => a);
     //takeAll,
     log);
 
+//10.2
+go([1,2,3,4,5,6],
+    L.map(a => Promise.resolve(a * a)),
+    L.filter(a => {
+        log(a);
+        return a % 2;
+    }),
+    L.map(a => {
+        log(a);
+        return a * a;
+    }),
+    take(4), log);
