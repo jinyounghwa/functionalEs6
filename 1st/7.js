@@ -5,18 +5,23 @@ const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
 const add = (a ,b) => a +b;
 
+const reduceF = (acc, a, f) => a instanceof Promise ? a.then(a => f(acc,a),
+        e=> e==nop ? acc : Promise.reject(e)) : f(acc, a);
+
+const head = iter => go1(take(1, iter), ([h]) => {
+   // log(h);
+    return h});
+
 const reduce = curry((f, acc, iter) => {
-    if (!iter) {
-        iter = acc[Symbol.iterator]();
-        acc = iter.next().value;
-    } else {
-        iter = iter[Symbol.iterator]();
-    }
+    if (!iter) return reduce(f,head(iter = acc[Symbol.iterator]()), iter);
+
+    iter = iter[Symbol.iterator]();
     return go1(acc, function reucr(acc) {
         let cur;
         while (!(cur = iter.next()).done){
-            const a = cur.value;
-            acc = f(acc, a);
+            // const a = cur.value;
+            // acc = f(acc, a);
+            acc = reduceF(acc, cur.value, f);
             // acc =acc instanceof Promise ? acc.then(acc =>f(acc, a)) :f(acc, a);
             if (acc instanceof  Promise) return acc.then(reucr);
         }
@@ -428,22 +433,85 @@ const  fg = id => Promise.resolve(id).then(g).then(f).catch(a => a);
 
 //10.1 비동기를 잘 제어해 보자
 
-    go(
-// [Promise.resolve(1),Promise.resolve(2),Promise.resolve(3)],
-[2,3,4],
-    map (a => Promise.resolve(a + 10)),
-    //takeAll,
-    log);
+//     go(
+// // [Promise.resolve(1),Promise.resolve(2),Promise.resolve(3)],
+// [2,3,4],
+//     map (a => Promise.resolve(a + 10)),
+//     //takeAll,
+//     log);
 
 //10.2
-go([1,2,3,4,5,6],
-    L.map(a => Promise.resolve(a * a)),
-    L.filter(a => {
-        log(a);
-        return a % 2;
-    }),
-    L.map(a => {
-        log(a);
-        return a * a;
-    }),
-    take(4), log);
+// go([1,2,3,4],
+//     L.map(a => Promise.resolve(a * a)),
+//     L.filter(a => {
+//         log(a);
+//         return a % 2;
+//     }),
+//     L.map(a => {
+//         log(a);
+//         return a * a;
+//     }),
+//     take(4), log);
+
+//10.3
+
+// go(
+//     [1,2,3,4],
+//     L.map(a => Promise.resolve(a * a)),
+//     L.filter(a => Promise.resolve(a % 2)),
+//     reduce(add),
+//     log);
+
+//10.4
+
+// go(
+//     [1,2,3,4,5,6,7,8],
+//     L.map(a =>{
+//         log(a);
+//         return new Promise(resolve => setTimeout(() => resolve(a * a),1000))
+//         }),
+//     L.filter(a =>(a % 2)),
+//     take(2),
+//     //reduce(add),
+//     log);
+// //10.5
+
+const  C = {};
+function noop(){}
+const catchNoop = arr => (arr.forEach(a => a instanceof  Promise ? a.catch(noop) : a), arr);
+
+
+C.reduce = curry((f, acc, iter) => {
+    let iter3 = iter ? [...iter] : [...acc];
+
+    return  iter ?
+        reduce(f, acc, iter3) :
+        reduce(f,iter3)});
+
+const delay1000 = a => new Promise(resolve => setTimeout(() => resolve(a), 500));
+
+C.take = curry((l, iter) => take(l, catchNoop([...iter])));
+
+console.time('');
+
+// go([1,2,3,4,5],
+//     L.map(a => delay1000(a*a)),
+//     L.filter(a => delay1000(a % 2)),
+//     L.map(a => delay1000(a *a)),
+//     C.take(2),
+//     C.reduce(add),
+//     log);
+//
+// console.timeEnd('');
+
+//10.7 즉시병렬 평가
+
+C.takeAll = C.take(Infinity);
+
+C.map = curry(pipe(L.map, C.takeAll));
+C.filter = curry(pipe(pipe(L.filter, C.takeAll)));
+
+// C.map(a => delay1000(a *a),[1,2,3,4]).then(log);
+// C.filter(a => delay1000(a % 2 ), [1,2,3,4]).then(log);
+
+//10.8 즉시, 지연 promise 병렬성
