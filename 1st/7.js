@@ -521,7 +521,7 @@ C.filter = curry(pipe(pipe(L.filter, C.takeAll)));
 //11.1 async await
 
 function  delay(time) {
-    return new Promise(resolve => setTimeout(() => resolve(a),500));
+    return new Promise(resolve => setTimeout(() => resolve(),time));
 }
 
 async function delayIdentity(a) {
@@ -543,3 +543,70 @@ f1();
 //     log(await f1());
 // })();
 
+// const pa = Promise.resolve(10);
+//
+// (async () => {
+//     log(await pa);
+// })();
+
+async function delayI(a) {
+    return new Promise(resolve => setTimeout(() => resolve(a),100));
+}
+
+async function f2() {
+    const list = [1, 2, 3, 4];
+    const temp = list.map(async a => await delayI(a * a));
+    log(temp);
+    const res = await temp;
+    log(res);
+}
+f2();
+
+async function f3() {
+    const list = [1,2,3,4];
+    const res = await map(a => delayI( a * a), list);
+    log(res);
+}
+f3();
+
+function f4() {
+    const list = [1,2,3,4];
+    return  map(a => delayI( a * a), list)
+}
+
+// (async () => {
+//     log(await f4());
+// })();
+
+f4().then(log);
+
+function f5(list) {
+    return go(list,
+        L.map(a => delayI( a *a)),
+        L.filter(a => delayI(a % 2)),
+        L.map(a => delayI( a + 1)),
+        take(3),
+        reduce((a, b) => delayI(a + b)));
+}
+go(f5([1,2,3,4,5,6,7,8]), log);
+
+async function f6(list) {
+    let temp = [];
+    for(const a of list) {
+        const b = await delayI(a *a);
+        if( await delayI(b % 2)) {
+            const c = delayI(b + 1);
+            log(c);
+            temp.push(c);
+            if(temp.length == 3) break;
+        }
+    }
+    let res = temp[0], i = 0;
+    while (++i < temp.length) {
+        res = await delayI(res + temp[i]);
+    }
+    return res;
+
+}
+
+go(f6([1,2,3,4,5,6,7,8]), log);
