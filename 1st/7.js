@@ -1,5 +1,5 @@
-
 const log = console.log;
+
 const curry = f => (a, ..._) => _.length ? f(a, ..._) : (..._) => f(a, ..._);
 const go1 = (a, f) => a instanceof Promise ? a.then(f) : f(a);
 
@@ -488,6 +488,10 @@ C.reduce = curry((f, acc, iter) => {
         reduce(f, acc, iter3) :
         reduce(f,iter3)});
 
+// C.reduce = curry((f, acc, iter) => iter ?
+//         reduce(f, acc, catchNoop([...iter])) :
+//         reduce(f,catchNoop([...acc])));
+
 const delay1000 = a => new Promise(resolve => setTimeout(() => resolve(a), 500));
 
 C.take = curry((l, iter) => take(l, catchNoop([...iter])));
@@ -514,4 +518,28 @@ C.filter = curry(pipe(pipe(L.filter, C.takeAll)));
 // C.map(a => delay1000(a *a),[1,2,3,4]).then(log);
 // C.filter(a => delay1000(a % 2 ), [1,2,3,4]).then(log);
 
-//10.8 즉시, 지연 promise 병렬성
+//11.1 async await
+
+function  delay(time) {
+    return new Promise(resolve => setTimeout(() => resolve(a),500));
+}
+
+async function delayIdentity(a) {
+    await delay(1000);
+    return a;
+}
+
+async function f1() {
+    const a = await delayIdentity(10);
+    const b = await delayIdentity(5);
+    log(a + b);
+}
+f1();
+
+// async 함수는 Promise를 리턴한다. 값을 리턴하지 않는다. 함수 내에서 값을 처리해야 한다.
+// 그럼 다른 함수에서 받아서 사용한다면, then을 사용해야 한다.아니면 아래와 같이 즉시 실행함수를 만들어야 한다.
+
+// (async () => {
+//     log(await f1());
+// })();
+
